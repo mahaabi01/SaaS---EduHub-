@@ -7,5 +7,6 @@ export interface IExtendedRequest extends Request {
     role: string;
     username: string | null;
   };
-  instituteNumber? : string | null;
+  // instituteNumber? : string | null;
+  instituteNumber? : number;
 }
