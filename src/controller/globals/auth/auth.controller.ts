@@ -67,11 +67,13 @@ class AuthController {
     // first check email exist or not if yes check password 
     // if user is not registered throw error message as not registered user
     // token generation (jsonwebtoken-jwt)
+    try{
     const {email, password} = req.body
     if(!email || !password){
       res.status(400).json({
         message: "Please provide email and password."
       })
+      return
     }
     //check if email exist or not in our users table
     const data = await User.findAll({
@@ -89,9 +91,11 @@ class AuthController {
       const isPasswordMatch = bcrypt.compareSync(password, data[0].password)
       if(isPasswordMatch){
         // user login and generate token
+        console.log(isPasswordMatch, "Is password match ?")
         const token = jwt.sign({id: data[0].id}, "secretkey",{ 
           expiresIn : "30d"
         })
+        console.log("Generated token:", token)
         // res.cookie("token", token) //save token in cookie
         res.status(200).json({
           token: token,
@@ -105,6 +109,10 @@ class AuthController {
       }
     }
   }
+catch(error){
+  console.log("Error Occured: ",error)
+}
+}
 }
 
 export default AuthController;

@@ -21,7 +21,7 @@ sequelize
     console.log(error);
   });
 
-sequelize.sync({ force: false }).then(() => {
+sequelize.sync({ alter: false }).then(() => {
   console.log("DB migrated!");
 });
 
