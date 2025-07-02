@@ -44,11 +44,7 @@ import User from "../database/models/user.model";
 // }
 
 class Middleware {
-  static isLoggedIn = async (
-    req: IExtendedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
+  static isLoggedIn = async (req: IExtendedRequest, res: Response, next: NextFunction) => {
     const token = req.headers.authorization;
 
     if (!token) {
@@ -65,7 +61,6 @@ class Middleware {
         });
       } else {
         const userData = await User.findByPk(result.id);
-        console.log("User Data: ", userData);
         if (!userData) {
           res.status(403).json({
             message: "No user with that id, invalid token.",

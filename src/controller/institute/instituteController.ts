@@ -5,35 +5,20 @@ import { IExtendedRequest } from "../../middleware/types";
 import User from "../../database/models/user.model";
 
 class InstituteController {
-  static async createInstitute(
-    req: IExtendedRequest,
-    res: Response,
-    next: NextFunction
-  ) {
-    try {
-      const {
-        instituteName,
-        instituteEmail,
-        institutePhoneNumber,
-        instituteAddress,
-      } = req.body;
+  static async createInstitute(req: IExtendedRequest,res: Response, next: NextFunction) {
+      const {instituteName, instituteEmail, institutePhoneNumber, instituteAddress } = req.body;
       const { institutePanNo } = req.body || null;
-      const instituteVatNo = req.body.instituteVatNo || null;
-      if (
-        !instituteName ||
-        !instituteEmail ||
-        !institutePhoneNumber ||
-        !instituteAddress
-      ) {
+      const { instituteVatNo } = req.body || null;
+      if (!instituteName || !instituteEmail || !institutePhoneNumber || !instituteAddress) {
         res.status(400).json({
-          message:
-            "Please provide instituteName, instituteEmail, institutePhoneNumber and instituteAddress",
+          message: "Please provide instituteName, instituteEmail, institutePhoneNumber and instituteAddress",
         });
         return;
       }
 
       const instituteNumber = generateRandomInstituteNumber();
 
+  
       await sequelize.query(`CREATE TABLE IF NOT EXISTS institute_${instituteNumber} (
       id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
       instituteName VARCHAR(255) NOT NULL,
@@ -44,26 +29,18 @@ class InstituteController {
       instituteVatNo VARCHAR(255),
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )`);
-
+      )`);
+      
+      try{
       await sequelize.query(
         `INSERT INTO institute_${instituteNumber}(instituteName,instituteEmail,institutePhoneNumber,instituteAddress,institutePanNo,instituteVatNo) VALUES (?,?,?,?,?,?)`,
         {
-          replacements: [
-            instituteName,
-            instituteEmail,
-            institutePhoneNumber,
-            instituteAddress,
-            institutePanNo,
-            instituteVatNo,
-          ],
+          replacements: [instituteName, instituteEmail, institutePhoneNumber, instituteAddress, institutePanNo, instituteVatNo],
         }
-      );
-
-      // if(req.user){
-      //   const user = await User.findByPk(req.user.id)
-      //   user?.currentInstituteNumber = instituteNumber
-      //   await user?.save()
+      );  
+      }catch(error){
+        console.log("ERROR OCCURED IN INSERTING:", error)
+      }   
 
       // create institute_history table where institute that user have created is stored
       await sequelize.query(`CREATE TABLE IF NOT EXISTS user_institute(
@@ -71,7 +48,9 @@ class InstituteController {
       userId VARCHAR(255) REFERENCES users(id),
       instituteNumber INT UNIQUE
       )`);
-
+      
+      
+      console.log("Request for user:", req.user)
       if (req.user) {
         await sequelize.query(
           `INSERT INTO user_institute(userId, instituteNumber) VALUES(?,?)`,
@@ -80,7 +59,7 @@ class InstituteController {
           }
         );
 
-        User.update(
+        await User.update(
           {
             currentInstituteNumber: instituteNumber,
           },
@@ -93,46 +72,37 @@ class InstituteController {
       }
       req.instituteNumber = instituteNumber;
 
+      /*
       //alternative way
+      // if(req.user){
+      //   const user = await User.findByPk(req.user.id)
+      //   user?.currentInstituteNumber = instituteNumber
+      //   await user?.save() // alternative way below
+      //   alternative way using raw query can also be used. `UPDATE FROM users SET currentInstituteNumber = instituteNumber WHERE id: id
+      // note that for model created it is always better to use ORM method than raw query. 
+      //    req.user?.instituteNumber = instituteNumber;
+      */
 
-      //alternative way using raw query can also be used.
-
-      // req.user?.instituteNumber = instituteNumber;
       next();
-      // await sequelize.query(`CREATE TABLE teacher_$`)
-    } catch (error) {
-      // static async createTeacherTable = async (req:Request, res:Response)=>{
-      //   await sequelize.query(` CREATE TABLE teacher_${}`)
-      // }
-
-      console.log("Erorr occured:", error);
-    }
   }
 
-  static createTeacherTable = async (
-    req: IExtendedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
+  static createTeacherTable = async (req: IExtendedRequest, res: Response, next: NextFunction) => {
     try {
       const instituteNumber = req.instituteNumber;
       await sequelize.query(`CREATE TABLE IF NOT EXISTS teacher_${instituteNumber}(
-    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    teacherName VARCHAR(255) NOT NULL,
-    teacherEmail VARCHAR(255) NOT NULL,
-    teacherPhoneNumber VARCHAR(255) NOT NULL UNIQUE
-    )`);
-      next();
-    } catch (error) {
+        id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+        teacherName VARCHAR(255) NOT NULL,
+        teacherEmail VARCHAR(255) NOT NULL,
+        teacherPhoneNumber VARCHAR(255) NOT NULL UNIQUE
+        )`);
+        next();
+      } 
+      catch (error) {
       console.log("Error Occured :", error);
     }
   };
 
-  static createStudentTable = async (
-    req: IExtendedRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
+  static createStudentTable = async (req: IExtendedRequest, res: Response, next: NextFunction) => {
     try {
       const instituteNumber = req.instituteNumber;
       await sequelize.query(`
