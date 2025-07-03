@@ -68,8 +68,10 @@ class InstituteController {
           }
         );
       }
-      req.instituteNumber = instituteNumber;
 
+      if(req.user){
+      req.user.currentInstituteNumber = instituteNumber;
+      }
       /*
       //alternative way
       // if(req.user){
@@ -92,7 +94,7 @@ class InstituteController {
 
   static createTeacherTable = async (req: IExtendedRequest, res: Response, next: NextFunction) => {
     try {
-      const instituteNumber = req.instituteNumber;
+      const instituteNumber = req.user?.currentInstituteNumber;
       await sequelize.query(`
         CREATE TABLE IF NOT EXISTS teacher_${instituteNumber}(
         id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -114,7 +116,7 @@ class InstituteController {
 
   static createStudentTable = async (req: IExtendedRequest, res: Response, next: NextFunction) => {
     try {
-      const instituteNumber = req.instituteNumber;
+      const instituteNumber = req.user?.currentInstituteNumber;
       await sequelize.query(`
       CREATE TABLE IF NOT EXISTS student_${instituteNumber}(
       id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -134,7 +136,7 @@ class InstituteController {
   };
 
   static createCourseTable = async (req: IExtendedRequest, res: Response) => {
-      const instituteNumber = req.instituteNumber;
+      const instituteNumber = req.user?.currentInstituteNumber;
       await sequelize.query(`
       CREATE TABLE IF NOT EXISTS course_${instituteNumber}(
       id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,

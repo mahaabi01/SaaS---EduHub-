@@ -1,5 +1,6 @@
 // multer configuration
 
+import { Request } from "express";
 import multer from "multer";
 
 const storage = multer.diskStorage({
@@ -14,4 +15,5 @@ const storage = multer.diskStorage({
   }
 })
 
-export default storage;
+export { multer, storage };
+
