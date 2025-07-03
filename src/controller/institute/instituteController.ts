@@ -6,6 +6,7 @@ import User from "../../database/models/user.model";
 
 class InstituteController {
   static async createInstitute(req: IExtendedRequest,res: Response, next: NextFunction) {
+      try{
       const {instituteName, instituteEmail, institutePhoneNumber, instituteAddress } = req.body;
       const { institutePanNo } = req.body || null;
       const { instituteVatNo } = req.body || null;
@@ -48,9 +49,6 @@ class InstituteController {
       userId VARCHAR(255) REFERENCES users(id),
       instituteNumber INT UNIQUE
       )`);
-      
-      
-      console.log("Request for user:", req.user)
       if (req.user) {
         await sequelize.query(
           `INSERT INTO user_institute(userId, instituteNumber) VALUES(?,?)`,
@@ -84,16 +82,28 @@ class InstituteController {
       */
 
       next();
+  
+    
+      }catch(error){
+        console.log("Error:", error)
+      }
   }
+
 
   static createTeacherTable = async (req: IExtendedRequest, res: Response, next: NextFunction) => {
     try {
       const instituteNumber = req.instituteNumber;
-      await sequelize.query(`CREATE TABLE IF NOT EXISTS teacher_${instituteNumber}(
+      await sequelize.query(`
+        CREATE TABLE IF NOT EXISTS teacher_${instituteNumber}(
         id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
         teacherName VARCHAR(255) NOT NULL,
         teacherEmail VARCHAR(255) NOT NULL,
-        teacherPhoneNumber VARCHAR(255) NOT NULL UNIQUE
+        teacherPhoneNumber VARCHAR(255) NOT NULL UNIQUE,
+        teacherExpertise VARCHAR(255),
+        joinedData DATE,
+        salary VARCHAR(100),
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )`);
         next();
       } 
@@ -109,8 +119,14 @@ class InstituteController {
       CREATE TABLE IF NOT EXISTS student_${instituteNumber}(
       id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
       studentName VARCHAR(255) NOT NULL,
-      studentPhoneNumber VARCHAR(255) NOT NULL UNIQUE
-    )`);
+      studentPhoneNumber VARCHAR(255) NOT NULL UNIQUE,
+      studentAddress TEXT,
+      enrolledDate DATE,
+      studentImage VARCHAR(255),
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )`);
+      console.log("STUDENT UNDERSCORLD EXECUTED !")
       next();
     } catch (error) {
       console.log("Error Occured:", error);
@@ -118,21 +134,23 @@ class InstituteController {
   };
 
   static createCourseTable = async (req: IExtendedRequest, res: Response) => {
-    try {
       const instituteNumber = req.instituteNumber;
-      await sequelize.query(`CREATE TABLE IF NOT EXISTS course_${instituteNumber}(
-    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    courseName VARCHAR(255) NOT NULL UNIQUE,
-    coursePrice VARCHAR(255) NOT NULL
-    )`);
-
+      await sequelize.query(`
+      CREATE TABLE IF NOT EXISTS course_${instituteNumber}(
+      id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+      courseName VARCHAR(255) NOT NULL UNIQUE,
+      coursePrice VARCHAR(255) NOT NULL,
+      courseDuration VARCHAR(100),
+      courseLevel ENUM('beginner', 'intermediate', 'advance') NOT NULL,
+      courseThumbnail VARCHAR(200),
+      courseDescription TEXT,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )`);
       res.status(200).json({
         message: "Institute created successfully.",
         instituteNumber,
       });
-    } catch (error) {
-      console.log("Error Occured:", error);
-    }
   };
 }
 

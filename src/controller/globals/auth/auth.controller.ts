@@ -1,7 +1,3 @@
-// register
-// incoming data --> username, email, password
-// processing/checking --> email valid, compulsory data
-// db-table-query --> like insert/read/modify data
 import { Request, Response } from "express";
 import User from "../../../database/models/user.model";
 import bcrypt from "bcrypt"
@@ -41,8 +37,6 @@ class AuthController {
       return;
     }
     const { username, password, email } = req.body;
-
-    console.log(username, password, email + "Username, password, email");
     if (!username || !password || !email) {
       res.status(400).json({
         message: "Please provide username, password, email.",
@@ -91,11 +85,9 @@ class AuthController {
       const isPasswordMatch = bcrypt.compareSync(password, data[0].password)
       if(isPasswordMatch){
         // user login and generate token
-        console.log(isPasswordMatch, "Is password match ?")
         const token = jwt.sign({id: data[0].id}, "secretkey",{ 
           expiresIn : "30d"
         })
-        console.log("Generated token:", token)
         // res.cookie("token", token) //save token in cookie
         res.status(200).json({
           token: token,
