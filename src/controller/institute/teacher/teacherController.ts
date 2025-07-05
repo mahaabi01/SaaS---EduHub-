@@ -3,6 +3,7 @@ import { IExtendedRequest } from "../../../middleware/types";
 import sequelize from "../../../database/connection";
 import { QueryTypes } from "sequelize";
 import generateRandomPassword from "../../../services/generateRandomPassword";
+import sendMail from "../../../services/sendMail";
 
 const createTeacher = async(req:IExtendedRequest, res:Response)=>{
   const instituteNumber = req.user?.currentInstituteNumber;
@@ -30,6 +31,13 @@ const createTeacher = async(req:IExtendedRequest, res:Response)=>{
     type: QueryTypes.UPDATE,
     replacements: [teacherData[0].id, courseId]
   })
+
+  const mailInformation = {
+    to: teacherEmail,
+    subject: "Welcome to out EduHub.",
+    text: `You are officially welcome to our platform, Your login credentials are: Email: ${teacherEmail}, Password:${data.plainPassword}`
+  }
+  await sendMail(mailInformation)
 
   res.status(200).json({
     message: "Teacher created successfully."
