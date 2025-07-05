@@ -3,6 +3,8 @@ import sequelize from "../../database/connection";
 import { generateRandomInstituteNumber } from "../../services/generateRandomInstituteNumber";
 import { IExtendedRequest } from "../../middleware/types";
 import User from "../../database/models/user.model";
+import categories from "../../storage/seed";
+import { QueryTypes } from "sequelize";
 
 class InstituteController {
   static async createInstitute(req: IExtendedRequest,res: Response, next: NextFunction) {
@@ -21,7 +23,7 @@ class InstituteController {
 
   
       await sequelize.query(`CREATE TABLE IF NOT EXISTS institute_${instituteNumber} (
-      id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+      id VARCHAR(36) PRIMARY KEY DEFAULT(UUID()),
       instituteName VARCHAR(255) NOT NULL,
       instituteEmail VARCHAR(255) NOT NULL UNIQUE,
       institutePhoneNumber VARCHAR(255) NOT NULL UNIQUE,
@@ -45,7 +47,7 @@ class InstituteController {
 
       // create institute_history table where institute that user have created is stored
       await sequelize.query(`CREATE TABLE IF NOT EXISTS user_institute(
-      id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+      id VARCHAR(36) PRIMARY KEY DEFAULT(UUID()),
       userId VARCHAR(255) REFERENCES users(id),
       instituteNumber INT UNIQUE
       )`);
@@ -97,13 +99,15 @@ class InstituteController {
       const instituteNumber = req.user?.currentInstituteNumber;
       await sequelize.query(`
         CREATE TABLE IF NOT EXISTS teacher_${instituteNumber}(
-        id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+        id VARCHAR(36) PRIMARY KEY DEFAULT(UUID()),
         teacherName VARCHAR(255) NOT NULL,
         teacherEmail VARCHAR(255) NOT NULL,
         teacherPhoneNumber VARCHAR(255) NOT NULL UNIQUE,
         teacherExpertise VARCHAR(255),
         joinedData DATE,
         salary VARCHAR(100),
+        teacherPhoto VARCHAR(255),
+        teacherPassword VARCHAR(255),
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )`);
@@ -119,7 +123,7 @@ class InstituteController {
       const instituteNumber = req.user?.currentInstituteNumber;
       await sequelize.query(`
       CREATE TABLE IF NOT EXISTS student_${instituteNumber}(
-      id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+      id VARCHAR(36) PRIMARY KEY DEFAULT(UUID()),
       studentName VARCHAR(255) NOT NULL,
       studentPhoneNumber VARCHAR(255) NOT NULL UNIQUE,
       studentAddress TEXT,
@@ -139,13 +143,15 @@ class InstituteController {
       const instituteNumber = req.user?.currentInstituteNumber;
       await sequelize.query(`
       CREATE TABLE IF NOT EXISTS course_${instituteNumber}(
-      id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+      id VARCHAR(36) PRIMARY KEY DEFAULT(UUID()),
       courseName VARCHAR(255) NOT NULL UNIQUE,
       coursePrice VARCHAR(255) NOT NULL,
       courseDuration VARCHAR(100),
       courseLevel ENUM('beginner', 'intermediate', 'advance') NOT NULL,
       courseThumbnail VARCHAR(200),
       courseDescription TEXT,
+      teacherId VARCHAR(36) REFERENCES teacher_${instituteNumber} (id),
+      categoryId VARCHAR(36) NOT NULL REFERENCES catagory_${instituteNumber} (id),
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )`);
@@ -154,6 +160,26 @@ class InstituteController {
         instituteNumber,
       });
   };
+
+  static createCategoryTable = async(req:IExtendedRequest, res:Response, next:NextFunction) => {
+    const instituteNumber = req.user?.currentInstituteNumber
+      await sequelize.query(`CREATE TABLE IF NOT EXISTS category_${instituteNumber}(
+      id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+      categoryName VARCHAR(100) NOT NULL,
+      categoryDescription TEXT,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`)
+
+    categories.forEach(async function(category){
+      await sequelize.query(`INSERT INTO category_${instituteNumber}(categoryName, categoryDescription) VALUES(?,?)`, {
+      replacements: [category.categoryName, category.categoryDescription]
+    })
+    })
+
+    
+    next() 
+  }
 }
 
 // export default InstituteController;

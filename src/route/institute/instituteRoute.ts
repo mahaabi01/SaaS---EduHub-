@@ -6,6 +6,6 @@ import asyncErrorHandler from "../../services/asyncErrorHandler"
 const router:Router = express.Router()
 
 // router.route("/").post(Middleware.isLoggedIn, InstituteController.createInstitute)
-router.route("/addInstitute").post(Middleware.isLoggedIn, InstituteController.createInstitute, InstituteController.createTeacherTable, InstituteController.createStudentTable, asyncErrorHandler(InstituteController.createCourseTable))
+router.route("/addInstitute").post(Middleware.isLoggedIn, InstituteController.createInstitute, InstituteController.createTeacherTable, InstituteController.createStudentTable, InstituteController.createCategoryTable, asyncErrorHandler(InstituteController.createCourseTable))
 
 export default router
