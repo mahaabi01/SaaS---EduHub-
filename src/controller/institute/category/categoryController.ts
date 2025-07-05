@@ -1,4 +1,4 @@
-import { Request,Response } from "express";
+import { Response } from "express";
 import { IExtendedRequest } from "../../../middleware/types";
 import sequelize from "../../../database/connection";
 import categories from "../../../storage/seed";
@@ -6,7 +6,7 @@ import { QueryTypes } from "sequelize";
 
 const createCategory = async(req:IExtendedRequest, res:Response)=> {
   const instituteNumber = req.user?.currentInstituteNumber
-  const { categoryName,categoryDescription} =req.body
+  const { categoryName,categoryDescription} = req.body
   if(!categoryName || !categoryDescription){
     return res.status(400).json({
       message: "Please provide categoryName, categoryDescription."

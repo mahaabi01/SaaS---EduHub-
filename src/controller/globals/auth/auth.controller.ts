@@ -2,31 +2,8 @@ import { Request, Response } from "express";
 import User from "../../../database/models/user.model";
 import bcrypt from "bcrypt"
 import jwt from 'jsonwebtoken'
+import generateJWTToken from "../../../services/generateJwtToken";
 
-//functional approach
-// const registerUser = async (req: Request, res: Response) => {
-//   console.log("Request body:", req.body)
-//   const { username, password, email } = req.body;
-//   if (!username || !password || !email) {
-//     res.status(400).json({
-//       message: "Please provide username, password, email.",
-//     });
-//   } else {
-//     //insert into Users table
-//     await User.create({
-//       username,
-//       password,
-//       email,
-//     });
-//     res.status(200).json({
-//       message: "User registered successfully.",
-//     });
-//   }
-// };
-
-// export { registerUser };
-
-//oop based
 
 class AuthController {
   static async registerUser(req: Request, res: Response) {
@@ -45,7 +22,7 @@ class AuthController {
       //insert into Users table
       await User.create({
         username,
-        password: bcrypt.hashSync(password, 10),  //bluefish algoeithm
+        password: bcrypt.hashSync(password, 10),  //bluefish algorithm
         email,
       });
       res.status(200).json({
@@ -85,9 +62,11 @@ class AuthController {
       const isPasswordMatch = bcrypt.compareSync(password, data[0].password)
       if(isPasswordMatch){
         // user login and generate token
-        const token = jwt.sign({id: data[0].id}, "secretkey",{ 
-          expiresIn : "30d"
-        })
+        // const token = jwt.sign({id: data[0].id}, "secretkey",{ 
+        //   expiresIn : "30d"
+        // })
+        // const token = generateJWTToken(data[0].id)
+        const token = generateJWTToken({id: data[0].id})
         // res.cookie("token", token) //save token in cookie
         res.status(200).json({
           token: token,

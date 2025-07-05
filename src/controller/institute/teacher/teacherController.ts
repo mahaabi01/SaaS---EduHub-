@@ -35,7 +35,7 @@ const createTeacher = async(req:IExtendedRequest, res:Response)=>{
   const mailInformation = {
     to: teacherEmail,
     subject: "Welcome to out EduHub.",
-    text: `You are officially welcome to our platform, Your login credentials are: Email: ${teacherEmail}, Password:${data.plainPassword}`
+    text: `You are officially welcome to our platform, Your login credentials are: Email: ${teacherEmail}, Password:${data.plainPassword}. Your institute number is: ${instituteNumber}.`
   }
   await sendMail(mailInformation)
 

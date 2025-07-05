@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import sequelize from "../../../database/connection";
 import { IExtendedRequest } from "../../../middleware/types";
 import { QueryTypes } from "sequelize";
@@ -6,7 +6,6 @@ import { QueryTypes } from "sequelize";
 const createCourse = async (req: IExtendedRequest, res: Response) => {
   const instituteNumber = req.user?.currentInstituteNumber
   const {coursePrice, courseName, courseDescription, courseDuration, courseLevel, categoryId } = req.body;
-  console.log("Course Details:", coursePrice, courseName, courseDescription, courseDuration, courseLevel, categoryId)
   if (!coursePrice || !courseName || !courseDescription || !courseDuration || !courseLevel || !categoryId) {
     return res.status(400).json({
       message:
