@@ -16,14 +16,25 @@ const createCategory = async(req:IExtendedRequest, res:Response)=> {
     type: QueryTypes.INSERT,
     replacements: [categoryName, categoryDescription]
   })
+  const [CategoryData ] : {id: string, createdAt : Date}[] = await sequelize.query(`SELECT id,createdAt FROM category_${instituteNumber} WHERE categoryName=?`, {
+    replacements : [categoryName],
+    type: QueryTypes.SELECT
+  })
+  console.log(CategoryData)
   res.status(200).json({
-    message: "Category added successfully."
+    message: "Categories added successfully.",
+    data: {
+      categoryName,
+      categoryDescription,
+      id: CategoryData.id,
+      createdAt: CategoryData.createdAt
+    }
   })
 }
 
 const getCategories = async(req:IExtendedRequest,res:Response)=>{
   const instituteNumber = req.user?.currentInstituteNumber
-  await sequelize.query(`SELECT * FROM category_${instituteNumber}`, {
+  const categories = await sequelize.query(`SELECT * FROM category_${instituteNumber}`, {
     type: QueryTypes.SELECT
     })
   res.status(200).json({

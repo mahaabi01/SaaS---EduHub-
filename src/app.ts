@@ -9,8 +9,14 @@ import studentRoute from "./route/institute/student/studentRoute"
 import categoryRoute from "./route/institute/category/categoryRoute"
 import teacherInstituteRoute from "./route/institute/teacher/teacherRoute"
 import teacherRoute from "./route/teacher/teacherRoute"
+import cors from 'cors'
 
 app.use(express.json());
+
+//cors config
+app.use(cors({
+  origin: ["http://localhost:3000", "http://localhost:3001"]
+}))
 
 // global route
 app.use("/api", authRoute);
