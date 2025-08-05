@@ -7,21 +7,35 @@ import categories from "../../storage/seed";
 import { QueryTypes } from "sequelize";
 
 class InstituteController {
-  static async createInstitute(req: IExtendedRequest,res: Response, next: NextFunction) {
-      try{
-      const {instituteName, instituteEmail, institutePhoneNumber, instituteAddress } = req.body;
+  static async createInstitute(
+    req: IExtendedRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const {
+        instituteName,
+        instituteEmail,
+        institutePhoneNumber,
+        instituteAddress,
+      } = req.body;
       const { institutePanNo } = req.body || null;
       const { instituteVatNo } = req.body || null;
-      if (!instituteName || !instituteEmail || !institutePhoneNumber || !instituteAddress) {
+      if (
+        !instituteName ||
+        !instituteEmail ||
+        !institutePhoneNumber ||
+        !instituteAddress
+      ) {
         res.status(400).json({
-          message: "Please provide instituteName, instituteEmail, institutePhoneNumber and instituteAddress",
+          message:
+            "Please provide instituteName, instituteEmail, institutePhoneNumber and instituteAddress",
         });
         return;
       }
 
       const instituteNumber = generateRandomInstituteNumber();
 
-  
       await sequelize.query(`CREATE TABLE IF NOT EXISTS institute_${instituteNumber} (
       id VARCHAR(36) PRIMARY KEY DEFAULT(UUID()),
       instituteName VARCHAR(255) NOT NULL,
@@ -33,17 +47,24 @@ class InstituteController {
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )`);
-      
-      try{
-      await sequelize.query(
-        `INSERT INTO institute_${instituteNumber}(instituteName,instituteEmail,institutePhoneNumber,instituteAddress,institutePanNo,instituteVatNo) VALUES (?,?,?,?,?,?)`,
-        {
-          replacements: [instituteName, instituteEmail, institutePhoneNumber, instituteAddress, institutePanNo, instituteVatNo],
-        }
-      );  
-      }catch(error){
-        console.log("ERROR OCCURED IN INSERTING:", error)
-      }   
+
+      try {
+        await sequelize.query(
+          `INSERT INTO institute_${instituteNumber}(instituteName,instituteEmail,institutePhoneNumber,instituteAddress,institutePanNo,instituteVatNo) VALUES (?,?,?,?,?,?)`,
+          {
+            replacements: [
+              instituteName,
+              instituteEmail,
+              institutePhoneNumber,
+              instituteAddress,
+              institutePanNo,
+              instituteVatNo,
+            ],
+          }
+        );
+      } catch (error) {
+        console.log("ERROR OCCURED IN INSERTING:", error);
+      }
 
       // create institute_history table where institute that user have created is stored
       await sequelize.query(`CREATE TABLE IF NOT EXISTS user_institute(
@@ -71,8 +92,8 @@ class InstituteController {
         );
       }
 
-      if(req.user){
-      req.user.currentInstituteNumber = instituteNumber;
+      if (req.user) {
+        req.user.currentInstituteNumber = instituteNumber;
       }
       /*
       //alternative way
@@ -86,15 +107,16 @@ class InstituteController {
       */
 
       next();
-  
-    
-      }catch(error){
-        console.log("Error:", error)
-      }
+    } catch (error) {
+      console.log("Error:", error);
+    }
   }
 
-
-  static createTeacherTable = async (req: IExtendedRequest, res: Response, next: NextFunction) => {
+  static createTeacherTable = async (
+    req: IExtendedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const instituteNumber = req.user?.currentInstituteNumber;
       await sequelize.query(`
@@ -111,14 +133,17 @@ class InstituteController {
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )`);
-        next();
-      } 
-      catch (error) {
+      next();
+    } catch (error) {
       console.log("Error Occured :", error);
     }
   };
 
-  static createStudentTable = async (req: IExtendedRequest, res: Response, next: NextFunction) => {
+  static createStudentTable = async (
+    req: IExtendedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
       const instituteNumber = req.user?.currentInstituteNumber;
       await sequelize.query(`
@@ -132,16 +157,61 @@ class InstituteController {
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )`);
-      console.log("STUDENT UNDERSCORLD EXECUTED !")
+      console.log("STUDENT UNDERSCORLD EXECUTED !");
       next();
     } catch (error) {
       console.log("Error Occured:", error);
     }
   };
 
+  static createCategoryTable = async (
+    req: IExtendedRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const instituteNumber = req.user?.currentInstituteNumber;
+    await sequelize.query(`CREATE TABLE IF NOT EXISTS category_${instituteNumber}(
+      id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+      categoryName VARCHAR(100) NOT NULL,
+      categoryDescription TEXT,
+      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`);
+
+    categories.forEach(async function (category) {
+      await sequelize.query(
+        `INSERT INTO category_${instituteNumber}(categoryName, categoryDescription) VALUES(?,?)`,
+        {
+          replacements: [category.categoryName, category.categoryDescription],
+        }
+      );
+    });
+
+    next();
+  };
+
+  static createCourseChapterTable = async (
+    req: IExtendedRequets,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const instituteNumber = req.user?.currentInstituteNumber;
+    await sequelize.query(`CREATE TABLE IF NOT EXISTS course_chapter_${instituteNumber}(
+      id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+      chapterName VARCHAR(255) NOT NULL,
+      chapterDuration VARCHAR(255) NOT NULL,
+      chapterDuration VARCHAR(100) NOT NULL,
+      chapterLevel ENUM('beginner', 'intermediate', 'advanced') NOT NULL,
+      courseId VARCHAR(36) REFERENCES course_${instituteNumber}(id) ON DELETE CASCADE ON UPDATE CASCADE,
+      createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )`);
+    next();
+  };
+
   static createCourseTable = async (req: IExtendedRequest, res: Response) => {
-      const instituteNumber = req.user?.currentInstituteNumber;
-      await sequelize.query(`
+    const instituteNumber = req.user?.currentInstituteNumber;
+    await sequelize.query(`
       CREATE TABLE IF NOT EXISTS course_${instituteNumber}(
       id VARCHAR(36) PRIMARY KEY DEFAULT(UUID()),
       courseName VARCHAR(255) NOT NULL UNIQUE,
@@ -155,31 +225,11 @@ class InstituteController {
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )`);
-      res.status(200).json({
-        message: "Institute created successfully.",
-        instituteNumber,
-      });
+    res.status(200).json({
+      message: "Institute created successfully.",
+      instituteNumber,
+    });
   };
-
-  static createCategoryTable = async(req:IExtendedRequest, res:Response, next:NextFunction) => {
-    const instituteNumber = req.user?.currentInstituteNumber
-      await sequelize.query(`CREATE TABLE IF NOT EXISTS category_${instituteNumber}(
-      id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-      categoryName VARCHAR(100) NOT NULL,
-      categoryDescription TEXT,
-      createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )`)
-
-    categories.forEach(async function(category){
-      await sequelize.query(`INSERT INTO category_${instituteNumber}(categoryName, categoryDescription) VALUES(?,?)`, {
-      replacements: [category.categoryName, category.categoryDescription]
-    })
-    })
-
-    
-    next() 
-  }
 }
 
 // export default InstituteController;
