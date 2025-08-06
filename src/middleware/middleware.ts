@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { IExtendedRequest } from "./types";
+import { IExtendedRequest, Role } from "./types";
 import User from "../database/models/user.model";
 
 class Middleware {
@@ -22,7 +22,7 @@ class Middleware {
         });
       } else {
         const userData = await User.findByPk(result.id, {
-          attributes: ['id', 'currentInstituteNumber']
+          attributes: ['id', 'currentInstituteNumber', 'role']
         });
         if (!userData) {
           res.status(403).json({
@@ -40,6 +40,21 @@ class Middleware {
     console.log("Error:", error)
   }
 }
+
+static restrictTo(...roles: Role[]){
+  return (req:IExtendedRequest, res: Response, next: NextFunction)=>{
+    let userRole = req.user?.role as Role;
+    if(!roles.includes(userRole)){
+      res.status(403).json({
+        message: "You don't have permission",
+      })
+    }else{
+      next();
+    }
+  }
+}
+
+
 
 }
 

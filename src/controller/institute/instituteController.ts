@@ -191,7 +191,7 @@ class InstituteController {
   };
 
   static createCourseChapterTable = async (
-    req: IExtendedRequets,
+    req: IExtendedRequest,
     res: Response,
     next: NextFunction
   ) => {
