@@ -234,13 +234,13 @@ class InstituteController {
   // createChapterLessonTable
   static createChapterLessonTable = async(req:IExtendedRequest, res:Response, next:NextFunction)=>{
     const instituteNumber = req.user?.currentInstituteNumber
-    await sequelize.query(`CREATE TABLE IF NOT EXISTS chapter_lesson_${insitituteNumber}(
+    await sequelize.query(`CREATE TABLE IF NOT EXISTS chapter_lesson_${instituteNumber}(
       id VARCHAR(36) PRIMARY KET DEFAULT (UUID()),
       lessonName VARCHAR(255) NOT NULL,
       lessonDescription TEXT,
       lessonVideoUrl VARCHAR(200) NOT NULL,
       lessonThumbnailUrl VARCHAR(200) NOT NULL,
-      chapterId VARCHAR(36) REFERENCES course_chapter_${insituteNumber}(id) ON DELETE CASCADE ON UPDATE CASCADE,
+      chapterId VARCHAR(36) REFERENCES course_chapter_${instituteNumber}(id) ON DELETE CASCADE ON UPDATE CASCADE,
       createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       )`,{

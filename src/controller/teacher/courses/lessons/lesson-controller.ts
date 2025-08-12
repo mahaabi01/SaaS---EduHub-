@@ -11,7 +11,7 @@ const createChapterLesson = async(req:IExtendedRequest, res:Response)=>{
       message: "Please provide lessonName, lessonDescription, lessonVideoUrl, lessonThumbnailUrl,chapterId"
     })
   }
-  await sequelize.query(`INSERT INTO chapter_lesson_${insitituteNumber}(lessonName,lessonDescription,lessonVideoUrl,lessonThumbnailUrl,chapterId) VALUES(?,?,?,?,?)`, {
+  await sequelize.query(`INSERT INTO chapter_lesson_${instituteNumber}(lessonName,lessonDescription,lessonVideoUrl,lessonThumbnailUrl,chapterId) VALUES(?,?,?,?,?)`, {
     type: QueryTypes.INSERT,
     replacements: [lessonName,lessonDescription, lessonVideoUrl, lessonThumbnailUrl,chapterId]
   })
